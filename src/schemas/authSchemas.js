@@ -5,7 +5,7 @@ export const signUpSchema = Joi.object({
     email: Joi.string().email().required(),
     cpf: Joi.string().length(11).pattern(/^\d{11}$/).required(),
     cellphone: Joi.string().min(10).max(11).pattern(/^\d{10,11}$/).required(),
-    password: Joi.string().required(),
+    password: Joi.string().min(8).required(),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required()
 });
 
