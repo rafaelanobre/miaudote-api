@@ -5,26 +5,29 @@ export async function getUserInfo(req,res){
     try{
         const { rows: [userInfo] } = await db.query(`
             SELECT
-                u.name AS user_name,
+                u.name AS "userName",
                 u.email,
                 u.cpf,
                 u.cellphone,
-                json_agg(
-                    json_build_object(
-                        'registeredAt', p."registeredAt",
-                        'petName', p.name,
-                        'categoryId', p."categoryId",
-                        'photo', p.photo,
-                        'available', p.available,
-                        'city', p.city,
-                        'state', p.state
+                (
+                    SELECT json_agg(
+                        json_build_object(
+                            'petId', p.id,
+                            'registeredAt', p."registeredAt",
+                            'petName', p.name,
+                            'categoryId', p."categoryId",
+                            'photo', p.photo,
+                            'available', p.available,
+                            'city', p.city,
+                            'state', p.state
+                        )
+                        ORDER BY p."registeredAt" DESC
                     )
+                    FROM pets AS p
+                    WHERE u.id = p."ownerId"
                 ) AS pets
             FROM users AS u
-            LEFT JOIN pets AS p ON u.id = p."ownerId"
             WHERE u.id = $1
-            GROUP BY u.id, p."registeredAt"
-            ORDER BY p."registeredAt" DESC
         `, [userId]);
 
         if (!userInfo) {
