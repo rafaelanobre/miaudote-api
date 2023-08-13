@@ -23,7 +23,8 @@ export async function getUserInfo(req,res){
             FROM users AS u
             LEFT JOIN pets AS p ON u.id = p."ownerId"
             WHERE u.id = $1
-            GROUP BY u.id
+            GROUP BY u.id, p."registeredAt"
+            ORDER BY p."registeredAt" DESC
         `, [userId]);
 
         if (!userInfo) {

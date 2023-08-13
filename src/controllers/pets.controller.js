@@ -21,7 +21,7 @@ export async function addNewPet(req,res){
 export async function getPets(req,res){
     try{
         const {rows: pets} = await db.query(`
-        SELECT name, photo, city, state FROM pets WHERE available=true`);
+        SELECT id,name, photo, city, state FROM pets WHERE available=true ORDER BY "registeredAt" DESC`);
         if (pets.rowCount === 0) return res.status(204).send({message:'Todos os pets já foram adotados!'});
         res.status(200).send(pets);
     }catch(err){
@@ -33,8 +33,16 @@ export async function getPets(req,res){
 export async function getPetById(req,res){
     const {id} = req.params;
     try{
-        const {rows: [petInfo]} = await db.query(`
-        SELECT * FROM pets WHERE id=$1`, [id]);
+        const { rows: [petInfo] } = await db.query(`
+            SELECT
+                p.*,
+                u.name AS "ownerName",
+                u.email AS "ownerEmail",
+                u.cellphone AS "ownerCellphone"
+            FROM pets AS p
+            LEFT JOIN users AS u ON p."ownerId" = u.id
+            WHERE p.id = $1
+        `, [id]);
         if (!petInfo) return res.status(404).send({message:'Não foi possível encontrar dados desse pet.'});
         res.status(200).send(petInfo);
     }catch(err){
